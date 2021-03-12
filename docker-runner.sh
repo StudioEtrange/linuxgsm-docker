@@ -15,6 +15,65 @@ cleanup() {
 
 trap 'cleanup' SIGINT SIGTERM
 
+update() {
+  touch INSTALLING.LOCK
+
+  ./lgsm-gameserver update || true
+  exitcode="$?"
+
+  if [ "$exitcode" -gt "0" ] && [ "$exitcode" != "3" ]; then
+    # Retry once 
+    echo "Unexpected error when updating ($exitcode). Trying again."
+    ./lgsm-gameserver update || true
+    exitcode="$?"
+  fi
+
+  rm -f INSTALLING.LOCK
+  
+  if [ "$exitcode" != "0" ] && [ "$exitcode" != "3" ]; then
+    # exitcode 3 is a warning, in this case the warning we don't care about is steam not being installed
+    # any other thing not being installed is an issue, but steam will be installed if it's missing.
+    # we can't use the one in apt-get for some reason (it installs but it always hangs installing games) 
+    echo "Unexpected exit code during install $exitcode"
+    exit $exitcode
+  fi
+
+  echo "Game has been updated. Starting"
+}
+
+install() {
+  touch INSTALLING.LOCK  
+  ./linuxgsm.sh $LGSM_GAMESERVERNAME
+  mv $LGSM_GAMESERVERNAME lgsm-gameserver || true
+  ls -ltr
+  ./lgsm-gameserver auto-install || true
+  exitcode="$?"
+
+  if [ "$exitcode" -gt "0" ] && [ "$exitcode" != "3" ]; then
+    # Retry once 
+    echo "Unexpected error when installing ($exitcode). Trying again."
+    ./lgsm-gameserver auto-install || true
+    exitcode="$?"
+  fi
+
+  echo "Install returned code $exitcode"
+  rm -f INSTALLING.LOCK
+    
+  if [ "$exitcode" != "0" ] && [ "$exitcode" != "3" ]; then
+    # exitcode 3 is a warning, in this case the warning we don't care about is steam not being installed
+    # any other thing not being installed is an issue, but steam will be installed if it's missing.
+    # we can't use the one in apt-get for some reason (it installs but it always hangs installing games) 
+    echo "Unexpected exit code during uninstall $exitcode"
+    exit $exitcode
+  fi
+
+  echo "Game has been installed. Exiting"
+  exit 
+  ;;
+}
+
+
+
 for f in startup-scripts/*.sh; do
   bash "$f" -H || break
 done
@@ -66,63 +125,29 @@ done
 
 echo "DONE GOMPLATING"
 
+[ -z "$LGSM_GAMESERVERNAME" ] && LGSM_UPDATEINSTALLSKIP="SKIP"
+
 if [ -n "$LGSM_UPDATEINSTALLSKIP" ]; then
   case "$LGSM_UPDATEINSTALLSKIP" in
-  "UPDATE")
-      touch INSTALLING.LOCK
-      ./linuxgsm.sh $LGSM_GAMESERVERNAME
-      mv $LGSM_GAMESERVERNAME lgsm-gameserver
-      ./lgsm-gameserver auto-install || true
-      exitcode="$?"
-
-      if [ "$exitcode" -gt "0" ] && [ "$exitcode" != "3" ]; then
-        # Retry once 
-        echo "Unexpected error when updating ($exitcode). Trying again."
-        ./lgsm-gameserver auto-install || true
-        exitcode="$?"
-      fi
-
-      rm -f INSTALLING.LOCK
-      
-      if [ "$exitcode" != "0" ] && [ "$exitcode" != "3" ]; then
-        # exitcode 3 is a warning, in this case the warning we don't care about is steam not being installed
-        # any other thing not being installed is an issue, but steam will be installed if it's missing.
-        # we can't use the one in apt-get for some reason (it installs but it always hangs installing games) 
-        echo "Unexpected exit code during install $exitcode"
-        exit $exitcode
-      fi
-
-      echo "Game has been updated. Starting"
+    "AUTO")
+        if [ ! -f lgsm-gameserver ]; then
+            install
+        else
+            update
+        fi
       ;;
-  "INSTALL")
-      touch INSTALLING.LOCK  
-      ./linuxgsm.sh $LGSM_GAMESERVERNAME
-      mv $LGSM_GAMESERVERNAME lgsm-gameserver || true
-      ls -ltr
-      ./lgsm-gameserver auto-install || true
-      exitcode="$?"
-
-      if [ "$exitcode" -gt "0" ] && [ "$exitcode" != "3" ]; then
-        # Retry once 
-        echo "Unexpected error when installing ($exitcode). Trying again."
-        ./lgsm-gameserver auto-install || true
-        exitcode="$?"
-      fi
-
-      echo "Install returned code $exitcode"
-      rm -f INSTALLING.LOCK
-       
-      if [ "$exitcode" != "0" ] && [ "$exitcode" != "3" ]; then
-        # exitcode 3 is a warning, in this case the warning we don't care about is steam not being installed
-        # any other thing not being installed is an issue, but steam will be installed if it's missing.
-        # we can't use the one in apt-get for some reason (it installs but it always hangs installing games) 
-        echo "Unexpected exit code during uninstall $exitcode"
-        exit $exitcode
-      fi
-
-      echo "Game has been installed. Exiting"
-      exit 
-      ;;
+    "UPDATE")
+        if [ ! -f lgsm-gameserver ]; then
+            echo "Please install it first"
+            exit 1
+        fi
+        update
+        ;;
+    "INSTALL")
+        install
+        ;;
+    "SKIP")
+        ;;
   esac
 fi
 

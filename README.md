@@ -48,6 +48,16 @@ To set one of these configs you just need to use the same variable you see in th
       - LGSM_MAX_PLAYERS=10
 ```
 
+## Update / Install server game lifecycle
+
+Use `LGSM_UPDATEINSTALLSKIP` to control the lifecycle installation/update of game server files
+
+
+* INSTALL will install the game server files
+* UPDATE will only update files - need to be installed first
+* SKIP will do nothing
+* AUTO will determine between INSTALL if not already installed or UPDATE mode if already installed
+
 ## Save files
 
 Many gameservers save files. By default all the compose files create a volume called `[project]_serverfiles`. The files in the volume are preserved across container restarts, but if you were to accidentally delete that volume the files would be gone.
