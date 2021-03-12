@@ -44,7 +44,7 @@ update() {
 install() {
   touch INSTALLING.LOCK  
   ./linuxgsm.sh $LGSM_GAMESERVERNAME
-  mv $LGSM_GAMESERVERNAME lgsm-gameserver || true
+  ln -s $LGSM_GAMESERVERNAME lgsm-gameserver || true
   ls -ltr
   ./lgsm-gameserver auto-install || true
   exitcode="$?"
