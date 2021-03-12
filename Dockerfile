@@ -167,6 +167,8 @@ ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
 
+VOLUME [ "/home/linuxgsm" ]
+
 LABEL org.opencontainers.image.created=$BUILD_DATE \
       org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/joshhsoj1902/linuxgsm-docker"
