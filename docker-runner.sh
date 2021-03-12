@@ -144,7 +144,11 @@ if [ -n "$LGSM_UPDATEINSTALLSKIP" ]; then
         update
         ;;
     "INSTALL")
-        install
+        if [ ! -f lgsm-gameserver ]; then
+          install
+        else
+          echo "Already installed"
+        fi
         ;;
     "SKIP")
         ;;
