@@ -67,9 +67,7 @@ install() {
     exit $exitcode
   fi
 
-  echo "Game has been installed. Exiting"
-  exit 
-  ;;
+  echo "Game has been installed. Starting"
 }
 
 
