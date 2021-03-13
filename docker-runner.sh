@@ -71,45 +71,55 @@ install() {
 }
 
 
-
+echo "* Lanching startup scripts if any"
 for f in startup-scripts/*.sh; do
-  bash "$f" -H || break
+  if [ -f "$f" ]; then
+    echo "- launch $f"
+    bash "$f" -H || break
+  fi
 done
 
-#Set ENV defaults
+echo "** Check clientport and sourcetvport values"
 if [ -n "$LGSM_PORT" ]; then
+  
   if [ -z "$LGSM_CLIENTPORT" ]; then
     clientport=$(($LGSM_PORT-10))
-    echo "clientPort $clientport"
+    echo "Auto determine clientport"
     export LGSM_CLIENTPORT=$clientport
   fi
+  echo "clientPort $LGSM_CLIENTPORT"
   if [ -z "$LGSM_SOURCETVPORT" ]; then
     sourcetvport=$(($LGSM_PORT+5))
-    echo "sourcetvport $sourcetvport"
+    echo "Auto determine sourcetvport"
     export LGSM_SOURCETVPORT=$sourcetvport
   fi
+  echo "sourcetvport $LGSM_SOURCETVPORT"
 fi
 
+echo "** Launching monitor API : /live /ready /gamedig"
 ./monitor &
 
+echo "** Extract LGSM_ values from env"
 parse-env --env "LGSM_" > env.json
 
+# cleaning previous lock
 rm -f INSTALLING.LOCK
 
+echo "** Check steam gameservername : $LGSM_GAMESERVERNAME"
 if [ -z "$LGSM_GAMESERVERNAME" ]; then  echo "Need to set LGSM_GAMESERVERNAME environment"
   exit 1
 fi
 
-echo "IP is set to "${LGSM_IP}
+echo "** IP is set to "${LGSM_IP}
 
-echo "Gomplating main config"
+echo "** Gomplating main config"
 mkdir -p ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME
 gomplate -d env=~/linuxgsm/env.json -f ~/linuxgsm/lgsm/config-default/config-lgsm/common.cfg.tmpl -o ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/common.cfg
 if [ -f ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/$LGSM_GAMESERVERNAME.cfg.tmpl ]; then
   gomplate -d env=~/linuxgsm/env.json -f ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/$LGSM_GAMESERVERNAME.cfg.tmpl -o ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/$LGSM_GAMESERVERNAME.cfg
 fi
 
-echo "Gomplating game configs"
+echo "** Gomplating game configs"
 for d in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game-template/*/ ; do
     configGameFolder=$(basename $d)
     for f in $d/*.tmpl ; do
@@ -121,9 +131,9 @@ for d in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game-template/*/ ; d
     done
 done
 
-echo "DONE GOMPLATING"
-
 [ -z "$LGSM_GAMESERVERNAME" ] && LGSM_UPDATEINSTALLSKIP="SKIP"
+echo "** Process install/update instruction : $LGSM_UPDATEINSTALLSKIP"
+
 
 if [ -n "$LGSM_UPDATEINSTALLSKIP" ]; then
   case "$LGSM_UPDATEINSTALLSKIP" in
@@ -161,27 +171,28 @@ fi
 # # configure game-specfic settings
 # gomplate -f ${servercfgfullpath}.tmpl -o ${servercfgfullpath}   // I can't predict what the filename is. 
 
-#
+echo "** Starting game"
 ./lgsm-gameserver start
 sleep 30s
 #
 
+echo "** Game details"
 ./lgsm-gameserver details
 
 if [ "$LGSM_CONSOLE_STDOUT" == "true" ]; then
-  tail -F ~/linuxgsm/log/console/lgsm-gameserver-console.log &
+  tail -F ~/linuxgsm/log/console/lgsm-gameserver-console.log 2>/dev/null &
 fi
 
 if [ "$LGSM_SCRIPT_STDOUT" == "true" ]; then
-  tail -F ~/linuxgsm/log/script/lgsm-gameserver-script.log &
+  tail -F ~/linuxgsm/log/script/lgsm-gameserver-script.log 2>/dev/null &
 fi
 
 if [ "$LGSM_ALERT_STDOUT" == "true" ]; then
-  tail -F ~/linuxgsm/log/script/lgsm-gameserver-alert.log &
+  tail -F ~/linuxgsm/log/script/lgsm-gameserver-alert.log 2>/dev/null &
 fi
 
 if [ "$LGSM_GAME_STDOUT" == "true" ]; then
-  tail -F ~/linuxgsm/log/server/output_log*.txt &
+  tail -F ~/linuxgsm/log/server/output_log*.txt  2>/dev/null &
 fi
 
 wait $!
