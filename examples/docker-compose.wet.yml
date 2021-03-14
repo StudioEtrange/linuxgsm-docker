@@ -24,7 +24,8 @@ services:
     #   - 10027:10027/udp
     environment:
       - LGSM_GAMESERVERNAME=wetserver
-      - LGSM_UPDATEINSTALLSKIP=UPDATE
+      - LGSM_DEFAULT_CFG_DIRNAME=WolfensteinEnemyTerritory
+      - LGSM_UPDATEINSTALLSKIP=AUTO
 
     # https://docs.docker.com/compose/compose-file/compose-file-v3/#volumes
     volumes:

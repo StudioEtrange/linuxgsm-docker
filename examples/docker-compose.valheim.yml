@@ -24,8 +24,9 @@ services:
       - 2456:2456/udp
     environment:
       - LGSM_GAMESERVERNAME=vhserver
+      - LGSM_DEFAULT_CFG_DIRNAME=
       - LGSM_SERVERNAME="My Game Name"
-      - LGSM_UPDATEINSTALLSKIP=UPDATE
+      - LGSM_UPDATEINSTALLSKIP=AUTO
       - LGSM_PORT=2456
       # World Name
       - LGSM_GAMEWORLD

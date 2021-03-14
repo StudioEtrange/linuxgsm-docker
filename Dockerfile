@@ -53,6 +53,7 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
         libstdc++5:i386 \
         libgconf-2-4 \
         mailutils \
+        multitail \
         net-tools \
         netcat \
         postfix \

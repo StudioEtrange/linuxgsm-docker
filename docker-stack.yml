@@ -22,6 +22,7 @@ services:
       # - LGSM_GAMESERVERNAME=mumbleserver
       - LGSM_IP=0.0.0.0
       - LGSM_GAMESERVERNAME=cssserver
-      - LGSM_UPDATEINSTALLSKIP=UPDATE
+      - LGSM_DEFAULT_CFG_DIRNAME=CounterStrikeSource
+      - LGSM_UPDATEINSTALLSKIP=AUTO
 
 

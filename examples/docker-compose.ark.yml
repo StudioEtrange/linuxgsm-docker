@@ -24,7 +24,8 @@ services:
       - 7777:7777/udp
     environment:
       - LGSM_GAMESERVERNAME=arkserver
-      - LGSM_UPDATEINSTALLSKIP=UPDATE
+      - LGSM_DEFAULT_CFG_DIRNAME=ARKSurvivalEvolved
+      - LGSM_UPDATEINSTALLSKIP=AUTO
       - LGSM_PORT=7777
       - LGSM_QUERYPORT=27015
       - LGSM_RCONPORT=27020

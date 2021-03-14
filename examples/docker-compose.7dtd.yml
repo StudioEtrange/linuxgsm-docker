@@ -25,8 +25,9 @@ services:
       - 26900:26900
     environment:
       - LGSM_GAMESERVERNAME=sdtdserver
+      - LGSM_DEFAULT_CFG_DIRNAME=7DaysToDie
       - LGSM_SERVERCFGFULLPATH=/home/linuxgsm/linuxgsm/lgsm/config-default/config-game/7DaysToDie/serverconfig.xml
-      - LGSM_UPDATEINSTALLSKIP=UPDATE
+      - LGSM_UPDATEINSTALLSKIP=AUTO
 
       # See /config-game-template/7DaysToDie/serverconfig.xml.tmpl for all config options
       - LGSM_PORT=26900

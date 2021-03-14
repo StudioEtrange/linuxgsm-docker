@@ -27,7 +27,8 @@ services:
       - 34197:34197/udp
     environment:
       - LGSM_GAMESERVERNAME=fctrserver
-      - LGSM_UPDATEINSTALLSKIP=UPDATE
+      - LGSM_DEFAULT_CFG_DIRNAME=Factorio
+      - LGSM_UPDATEINSTALLSKIP=AUTO
       - LGSM_PORT=34197
 
       # If LGSM_SAVE_PATH is set, a world file MUST already exist at that path.

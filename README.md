@@ -55,7 +55,7 @@ To set one of these configs you just need to use the same variable you see in th
 Some configurations are mandatory
 
   * `LGSM_GAMESERVERNAME` is the lgsm server name which must be one value picked from https://github.com/GameServerManagers/LinuxGSM/tree/master/lgsm/config-default/config-lgsm
-  * `LGSM_DEFAULT_CFG_DIRNAME` is the folder which contains lgsm default config files which must be one value picked from https://github.com/GameServerManagers/Game-Server-Configs
+  * `LGSM_DEFAULT_CFG_DIRNAME` is the folder which contains lgsm default config files which may be one existing folder name picked from https://github.com/GameServerManagers/Game-Server-Configs if it exist. Empty if none.
 
 ## Update / Install server game lifecycle
 

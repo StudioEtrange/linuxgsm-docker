@@ -23,7 +23,8 @@ services:
       - 27015:27015/udp
     environment:
       - LGSM_GAMESERVERNAME=csgoserver
-      - LGSM_UPDATEINSTALLSKIP=UPDATE
+      - LGSM_DEFAULT_CFG_DIRNAME=CounterStrikeConditionZero
+      - LGSM_UPDATEINSTALLSKIP=AUTO
       - LGSM_PORT=27015
 
     # https://docs.docker.com/compose/compose-file/compose-file-v3/#volumes

@@ -72,7 +72,7 @@ install() {
 
 # hack LGSM install_config.sh
 fix_install_config() {
-  # force override existing file when copy a file- allow to override already installed config files
+  # force override existing file when copy a file - allow to override already installed config files each time we update/install game server
   sed -i.bak 's/cp -nv/cp -v/g' "./lgsm/functions/install_config.sh"
 
   # disable download default config if file already exists
@@ -137,8 +137,9 @@ if [ -z "$LGSM_GAMESERVERNAME" ]; then  echo "Need to set LGSM_GAMESERVERNAME en
 fi
 
 echo "** Check default config dir name : $LGSM_DEFAULT_CFG_DIRNAME"
-if [ -z "$LGSM_DEFAULT_CFG_DIRNAME" ]; then  echo "Need to set LGSM_DEFAULT_CFG_DIRNAME environment with a value from https://github.com/GameServerManagers/Game-Server-Configs"
-  exit 1
+if [ -z "$LGSM_DEFAULT_CFG_DIRNAME" ]; then 
+  echo "- WARN : need to set LGSM_DEFAULT_CFG_DIRNAME environment"
+  echo "  if a folder name exist in https://github.com/GameServerManagers/Game-Server-Configs"
 fi
 
 echo "** IP is set to "${LGSM_IP}
@@ -165,10 +166,14 @@ for d in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game-template/*/ ; d
 done
 
 echo "** Copy default config files in a place where LGSM can find them"
-echo "    Copying lgsm/config-default/config-game/*/* into lgsm/config-default/config-game/*"
-for f in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/$LGSM_DEFAULT_CFG_DIRNAME/*; do
-    cp -v "${f}" /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/
-done
+if [ ! -z "$LGSM_DEFAULT_CFG_DIRNAME" ]; then
+  echo "    Copying lgsm/config-default/config-game/*/* into lgsm/config-default/config-game/*"
+  for f in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/$LGSM_DEFAULT_CFG_DIRNAME/*; do
+      cp -v "${f}" /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/
+  done
+else
+  echo "    No default config files provided"
+fi
 
 
 
