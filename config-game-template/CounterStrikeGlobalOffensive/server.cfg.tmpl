@@ -8,7 +8,7 @@
 // .................................. Basic ................................. //
 
 // Hostname - Name of the server.
-hostname "SERVERNAME"
+hostname "{{getenv "LGSM_SERVER_NAME" "SERVERNAME"}}"
 
 // RCON - remote console password.
 rcon_password "{{getenv "LGSM_RCON_PASSWORD" "ADMINPASSWORD"}}"

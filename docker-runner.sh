@@ -38,7 +38,7 @@ update() {
     exit $exitcode
   fi
 
-  echo "Game has been updated. Starting"
+  echo "Game has been updated."
 }
 
 install() {
@@ -67,11 +67,37 @@ install() {
     exit $exitcode
   fi
 
-  echo "Game has been installed. Starting"
+  echo "Game has been installed."
+}
+
+# hack LGSM install_config.sh
+fix_install_config() {
+  # force override existing file when copy a file- allow to override already installed config files
+  sed -i.bak 's/cp -nv/cp -v/g' "./lgsm/functions/install_config.sh"
+
+  # disable download default config if file already exists
+  # because config files are already present when we have cloned lgsm project 
+  # and moved them at the right place before templating them
+  # So we dont want to erase these files
+  sed -i.bak 's/"forcedl"/""/g' "./lgsm/functions/install_config.sh"
+}
+
+# deploy config files
+deploy_config() {
+  echo "** Deploy config files"
+  fix_install_config
+  (
+    set -a 
+    # load lgsm configuration
+    travistest=1 source ./lgsm-gameserver
+    set +a
+    # deploy default config files
+    ./lgsm/functions/install_config.sh
+  )
 }
 
 
-echo "* Lanching startup scripts if any"
+echo "** Lanching startup scripts if any"
 for f in startup-scripts/*.sh; do
   if [ -f "$f" ]; then
     echo "- launch $f"
@@ -105,21 +131,28 @@ parse-env --env "LGSM_" > env.json
 # cleaning previous lock
 rm -f INSTALLING.LOCK
 
-echo "** Check steam gameservername : $LGSM_GAMESERVERNAME"
-if [ -z "$LGSM_GAMESERVERNAME" ]; then  echo "Need to set LGSM_GAMESERVERNAME environment"
+echo "** Check steam game server name : $LGSM_GAMESERVERNAME"
+if [ -z "$LGSM_GAMESERVERNAME" ]; then  echo "Need to set LGSM_GAMESERVERNAME environment with a value from https://github.com/GameServerManagers/LinuxGSM/tree/master/lgsm/config-default/config-lgsm"
+  exit 1
+fi
+
+echo "** Check default config dir name : $LGSM_DEFAULT_CFG_DIRNAME"
+if [ -z "$LGSM_DEFAULT_CFG_DIRNAME" ]; then  echo "Need to set LGSM_DEFAULT_CFG_DIRNAME environment with a value from https://github.com/GameServerManagers/Game-Server-Configs"
   exit 1
 fi
 
 echo "** IP is set to "${LGSM_IP}
 
 echo "** Gomplating main config"
+echo "    Templating lgsm/config-default/config-lgsm/common.cfg.tmpl into lgsm/config-lgsm/$LGSM_GAMESERVERNAME/common.cfg"
 mkdir -p ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME
 gomplate -d env=~/linuxgsm/env.json -f ~/linuxgsm/lgsm/config-default/config-lgsm/common.cfg.tmpl -o ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/common.cfg
 if [ -f ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/$LGSM_GAMESERVERNAME.cfg.tmpl ]; then
   gomplate -d env=~/linuxgsm/env.json -f ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/$LGSM_GAMESERVERNAME.cfg.tmpl -o ~/linuxgsm/lgsm/config-lgsm/$LGSM_GAMESERVERNAME/$LGSM_GAMESERVERNAME.cfg
 fi
 
-echo "** Gomplating game configs"
+echo "** Gomplating all default game configs"
+echo "    Templating lgsm/config-default/config-game-template/*/*.tmpl into lgsm/config-default/config-game/*/*"
 for d in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game-template/*/ ; do
     configGameFolder=$(basename $d)
     for f in $d/*.tmpl ; do
@@ -130,6 +163,14 @@ for d in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game-template/*/ ; d
 		  chmod u+x,g+x $outputFile
     done
 done
+
+echo "** Copy default config files in a place where LGSM can find them"
+echo "    Copying lgsm/config-default/config-game/*/* into lgsm/config-default/config-game/*"
+for f in /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/$LGSM_DEFAULT_CFG_DIRNAME/*; do
+    cp -v "${f}" /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/
+done
+
+
 
 [ -z "$LGSM_GAMESERVERNAME" ] && LGSM_UPDATEINSTALLSKIP="SKIP"
 echo "** Process install/update instruction : $LGSM_UPDATEINSTALLSKIP"
@@ -143,6 +184,7 @@ if [ -n "$LGSM_UPDATEINSTALLSKIP" ]; then
         else
             update
         fi
+        deploy_config
       ;;
     "UPDATE")
         if [ ! -f lgsm-gameserver ]; then
@@ -150,6 +192,7 @@ if [ -n "$LGSM_UPDATEINSTALLSKIP" ]; then
             exit 1
         fi
         update
+        deploy_config
         ;;
     "INSTALL")
         if [ ! -f lgsm-gameserver ]; then
@@ -157,8 +200,10 @@ if [ -n "$LGSM_UPDATEINSTALLSKIP" ]; then
         else
           echo "Already installed"
         fi
+        deploy_config
         ;;
     "SKIP")
+        deploy_config
         ;;
   esac
 fi
@@ -168,8 +213,7 @@ if [ ! -f lgsm-gameserver ]; then
     exit 1
 fi
 
-# # configure game-specfic settings
-# gomplate -f ${servercfgfullpath}.tmpl -o ${servercfgfullpath}   // I can't predict what the filename is. 
+
 
 echo "** Starting game"
 ./lgsm-gameserver start

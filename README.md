@@ -30,6 +30,7 @@ For example, if you wanted to set the css "gslt" value the environment variable 
 ```yaml
     environment:
       - LGSM_GAMESERVERNAME=cssserver
+      - LGSM_DEFAULT_CFG_DIRNAME=CounterStrikeSource
       - LGSM_UPDATEINSTALLSKIP=UPDATE
       - LGSM_PORT=27015
       - LGSM_GSLT=myValue
@@ -43,10 +44,18 @@ To set one of these configs you just need to use the same variable you see in th
     environment:
       ## Out of the box LGSM
       - LGSM_GAMESERVERNAME=mcserver
+      - LGSM_DEFAULT_CFG_DIRNAME=Minecraft
       - LGSM_UPDATEINSTALLSKIP=UPDATE
       - LGSM_PORT=25565
       - LGSM_MAX_PLAYERS=10
 ```
+
+## Mandatory configuration
+
+Some configurations are mandatory
+
+  * `LGSM_GAMESERVERNAME` is the lgsm server name which must be one value picked from https://github.com/GameServerManagers/LinuxGSM/tree/master/lgsm/config-default/config-lgsm
+  * `LGSM_DEFAULT_CFG_DIRNAME` is the folder which contains lgsm default config files which must be one value picked from https://github.com/GameServerManagers/Game-Server-Configs
 
 ## Update / Install server game lifecycle
 
