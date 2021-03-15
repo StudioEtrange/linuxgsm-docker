@@ -23,7 +23,7 @@ services:
       - 27015:27015/udp
     environment:
       - LGSM_GAMESERVERNAME=csgoserver
-      - LGSM_DEFAULT_CFG_DIRNAME=CounterStrikeConditionZero
+      - LGSM_DEFAULT_CFG_DIRNAME=CounterStrikeGlobalOffensive
       - LGSM_UPDATEINSTALLSKIP=AUTO
       - LGSM_PORT=27015
 

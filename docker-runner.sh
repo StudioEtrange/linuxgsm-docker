@@ -85,6 +85,7 @@ fix_install_config() {
 # deploy config files
 deploy_config() {
   echo "** Deploy config files"
+  echo "-- begin deploy config files"
   fix_install_config
   (
     set -a 
@@ -94,6 +95,7 @@ deploy_config() {
     # deploy default config files
     ./lgsm/functions/install_config.sh
   )
+  echo "-- end deploy config files"
 }
 
 

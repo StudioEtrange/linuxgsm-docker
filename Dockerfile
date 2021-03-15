@@ -1,4 +1,4 @@
-# Operator
+# Build Monitor ------------------------------
 FROM golang:1.16.0 AS builder
 RUN mkdir -p /src
 ADD Makefile /
@@ -8,11 +8,17 @@ WORKDIR /
 
 RUN make build-monitor
 
+
+
+
+
+
+
+# Build main image ------------------------------
 FROM ubuntu:18.04
 
 WORKDIR /home/linuxgsm/linuxgsm
 
-# Stop apt-get asking to get Dialog frontend
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM xterm
 
@@ -22,9 +28,7 @@ ENV LGSM_ALERT_STDOUT=true
 ENV LGSM_GAME_STDOUT=true
 
 # Install dependencies and clean
-# RUN echo steam steam/question select "I AGREE" | debconf-set-selections && \
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository multiverse && \
     dpkg --add-architecture i386 && \
@@ -72,6 +76,9 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/*
 
+# Install node
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+
 # Install steamcmd
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN echo steam steam/question select "I AGREE" | debconf-set-selections \
@@ -100,7 +107,10 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/*
 
+# Install parse-env
 COPY --from=joshhsoj1902/parse-env:1.0.3 /go/src/github.com/joshhsoj1902/parse-env/main /usr/bin/parse-env
+
+# Intall gomplate - templating engine
 COPY --from=hairyhenderson/gomplate:v3.9.0-alpine /bin/gomplate /usr/bin/gomplate
 
 # Add the linuxgsm user
@@ -124,18 +134,6 @@ RUN git clone "https://github.com/GameServerManagers/LinuxGSM.git" /home/linuxgs
  && git clone "https://github.com/GameServerManagers/Game-Server-Configs.git" /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/ \
  && rm -rf /home/linuxgsm/linuxgsm-config/.git
 
-# Install LinuxGSM
-# RUN git clone "https://github.com/joshhsoj1902/LinuxGSM.git" /home/linuxgsm/linuxgsm \
-#  && git checkout joshhsoj1902-changes-4-docker \
-#  && rm -rf /home/linuxgsm/linuxgsm/.git \
-# # Install GameConfigs
-#  && git clone "https://github.com/GameServerManagers/Game-Server-Configs.git" /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/ \
-#  && rm -rf /home/linuxgsm/linuxgsm-config/.git
-
-# ADD --chown=linuxgsm:linuxgsm src /home/linuxgsm/linuxgsm
-# RUN git clone "https://github.com/GameServerManagers/Game-Server-Configs.git" /home/linuxgsm/linuxgsm/lgsm/config-default/config-game/ \
-#  && rm -rf /home/linuxgsm/linuxgsm-config/.git
-
 USER root 
 
 RUN find /home/linuxgsm/linuxgsm -type f -name "*.sh" -exec chmod u+x {} \; \
@@ -152,6 +150,7 @@ RUN touch /.dockerenv
 
 USER linuxgsm
 
+# Install joshhsoj1902 monitoring system
 COPY --chown=linuxgsm:linuxgsm --from=builder /monitor monitor
 
 RUN mkdir logs serverfiles 
@@ -167,6 +166,11 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
+
+
+
+
+
 
 VOLUME [ "/home/linuxgsm" ]
 
